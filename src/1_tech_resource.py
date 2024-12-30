@@ -133,6 +133,11 @@ def get_tech_resource(node_core2neighbor):
         neighbor_index_list = [int(node.split('_')[-1]) for node in neighbor_list]
         resource_index = [core_index] + neighbor_index_list
         resource = torch.mean(node_patent2vec[resource_index], dim=0)
+        # check 0
+        # 存在有专利信息但是没有向量的情况 - 非常不好的情况
+        if torch.sum(resource) == 0.0:
+            logging.info('  resource has 0')
+            logging.info('  resource_index: %s', resource_index)
         tech_resource[core_index] = resource
     # save
     tech_resource = tech_resource.numpy()
