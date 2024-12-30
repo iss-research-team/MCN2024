@@ -18,3 +18,21 @@
 2024-12-30 13:05:46,919 - root - INFO -   tech_resource: torch.Size([12197, 1024])
 2024-12-30 13:05:48,339 - root - INFO -   tech_resource saved successfully
 Tech resource calculated successfully.
+
+
+2024-12-30 14:17:23,747 - root - INFO - Estimate the threshold of similarity between two tech resources
+2024-12-30 14:17:23,747 - root - INFO -   tech_resource: torch.Size([12197, 1024])
+2024-12-30 14:17:23,763 - root - INFO -   tech_resource: torch.Size([12099, 1024])
+2024-12-30 14:17:24,392 - root - INFO -   upper_triangle: (73186851,)
+2024-12-30 14:17:26,520 - root - INFO -   JB test
+2024-12-30 14:17:26,520 - root - INFO -   p_value: 0.0
+2024-12-30 14:17:26,520 - root - INFO -   JS test: tech resource is not normal distribution
+2024-12-30 14:17:38,145 - root - INFO -   KS test
+2024-12-30 14:17:38,145 - root - INFO -   p_value: 0.0
+2024-12-30 14:17:38,145 - root - INFO -   KS test: tech resource is not normal distribution
+2024-12-30 14:17:41,894 - root - INFO -   mean: 0.11715796
+2024-12-30 14:17:42,096 - root - INFO -   std: 0.28859445
+2024-12-30 14:17:42,097 - root - INFO -   threshold_1: 0.40575242
+2024-12-30 14:17:42,097 - root - INFO -   threshold_2: 0.6943468675017357
+2024-12-30 14:17:42,097 - root - INFO -   threshold_3: 0.9829413220286369
+Threshold calculated successfully.
