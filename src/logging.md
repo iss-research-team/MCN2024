@@ -36,3 +36,4 @@ Tech resource calculated successfully.
 2024-12-30 14:17:42,097 - root - INFO -   threshold_2: 0.6943468675017357
 2024-12-30 14:17:42,097 - root - INFO -   threshold_3: 0.9829413220286369
 Threshold calculated successfully.
+ 
