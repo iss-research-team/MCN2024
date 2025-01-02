@@ -45,32 +45,32 @@ def main():
     upper_triangle = upper_triangle.cpu().numpy()
     logging.info('  upper_triangle: %s', upper_triangle.shape)
 
-    # # JS test
-    # _, p_value = jarque_bera(upper_triangle)
-    # logging.info('  JB test')
-    # logging.info('  p_value: %s', p_value)
-    # if p_value < 0.05:
-    #     logging.info('  JS test: tech resource is not normal distribution')
-    # else:
-    #     logging.info('  JS test: tech resource is normal distribution')
-    #
-    # # KS test
-    # stat, p_value = kstest(upper_triangle, 'norm')
-    # logging.info('  KS test')
-    # logging.info('  p_value: %s', p_value)
-    # if p_value < 0.05:
-    #     logging.info('  KS test: tech resource is not normal distribution')
-    # else:
-    #     logging.info('  KS test: tech resource is normal distribution')
+    # JS test
+    _, p_value = jarque_bera(upper_triangle)
+    logging.info('  JB test')
+    logging.info('  p_value: %s', p_value)
+    if p_value < 0.05:
+        logging.info('  JS test: tech resource is not normal distribution')
+    else:
+        logging.info('  JS test: tech resource is normal distribution')
 
-    # # 抽取1000000个样本，概率密度图
-    # np.random.seed(20241230)
-    # sample = np.random.choice(upper_triangle, 1000000)
-    # sns.kdeplot(sample, fill=True)
-    # plt.xlabel('similarity')
-    # plt.ylabel('density')
-    # plt.title('Tech Resource Similarity Distribution')
-    # plt.savefig('../data/img/tech_resource_similarity_distribution.png')
+    # KS test
+    stat, p_value = kstest(upper_triangle, 'norm')
+    logging.info('  KS test')
+    logging.info('  p_value: %s', p_value)
+    if p_value < 0.05:
+        logging.info('  KS test: tech resource is not normal distribution')
+    else:
+        logging.info('  KS test: tech resource is normal distribution')
+
+    # 抽取1000000个样本，概率密度图
+    np.random.seed(20241230)
+    sample = np.random.choice(upper_triangle, 1000000)
+    sns.kdeplot(sample, fill=True)
+    plt.xlabel('similarity')
+    plt.ylabel('density')
+    plt.title('Tech Resource Similarity Distribution')
+    plt.savefig('../img/tech_resource_similarity_distribution.png')
 
     # 均值
     mean = np.mean(upper_triangle)
@@ -97,7 +97,7 @@ def main():
     plt.yscale('log')
     plt.xscale('log')
 
-    plt.savefig('../data/img/direct_competitor_count_distribution.png')
+    plt.savefig('../img/direct_competitor_count_distribution.png')
 
 
 if __name__ == '__main__':

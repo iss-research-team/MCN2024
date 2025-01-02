@@ -1,6 +1,7 @@
 import json
 import logging
 from collections import defaultdict
+import torch
 
 logging = logging.getLogger(__name__)
 
@@ -99,15 +100,49 @@ def get_neighbors(node_index2node_core, link_list):
     :return:dict{list}
     """
 
-    node_core2neighbor_dict = defaultdict(list)
+    node_core2neighbor_dict = defaultdict(set)
     for s, t in link_list:
         if s in node_index2node_core and t in node_index2node_core:
-            node_core2neighbor_dict[s].append(t)
-            node_core2neighbor_dict[t].append(s)
+            node_core2neighbor_dict[s].add(t)
+            node_core2neighbor_dict[t].add(s)
     logging.info('  node_core2neighbor_dict: %s', len(node_core2neighbor_dict))
     for node_index in node_index2node_core:
         if node_index not in node_core2neighbor_dict:
-            node_core2neighbor_dict[node_index] = []
+            node_core2neighbor_dict[node_index] = set()
     logging.info('  node_core2neighbor_dict: %s', len(node_core2neighbor_dict))
 
+    # trans 2 list
+    node_core2neighbor_dict = {node: list(neighbor) for node, neighbor in node_core2neighbor_dict.items()}
+
     return node_core2neighbor_dict
+
+
+def mix_max(tensor, average='0'):
+    """
+    mix max
+    :param tensor:
+        [batch, dim]
+    :param average:
+        mean
+    :return:
+    """
+    # device
+    device = tensor.device
+    if average == 'mean':
+        average = torch.mean(tensor, dim=0)
+    elif average == '0':
+        average = torch.zeros(tensor.shape[-1])
+    else:
+        raise ValueError('average must be mean or 0')
+
+    # mix max
+    # max | v > average
+    # min | v < average
+    tensor_max = torch.max(tensor, dim=0).values
+    tensor_min = torch.min(tensor, dim=0).values
+    # diff
+    diff_max = tensor_max - average
+    diff_min = average - tensor_min
+    # mix max
+    tensor_mix_max = torch.where(diff_max > diff_min, tensor_max, tensor_min)
+    return tensor_mix_max

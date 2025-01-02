@@ -1,8 +1,9 @@
 import numpy as np
-import torch
-from utils import *
+import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+from utils import *
 
 
 def get_tech_resource(node_core2neighbor):
@@ -13,7 +14,7 @@ def get_tech_resource(node_core2neighbor):
     # load node_patent2vec_mix_max_average.npy
     node_patent2vec = np.load('../data/inputs/node_base2vec_mix_max_average.npy')
     # torch
-    node_patent2vec = torch.tensor(node_patent2vec)
+    node_patent2vec = torch.tensor(node_patent2vec).half()
 
     logging.info('  node_patent2vec: %s', node_patent2vec.shape)
     tech_resource = torch.zeros(node_patent2vec.shape)
@@ -22,7 +23,7 @@ def get_tech_resource(node_core2neighbor):
         core_index = int(node_core.split('_')[-1])
         neighbor_index_list = [int(node.split('_')[-1]) for node in neighbor_list]
         resource_index = [core_index] + neighbor_index_list
-        resource = torch.mean(node_patent2vec[resource_index], dim=0)
+        resource = mix_max(node_patent2vec[resource_index], average='0')
         # check 0
         # 存在有专利信息但是没有向量的情况 - 非常不好的情况
         if torch.sum(resource) == 0.0:
