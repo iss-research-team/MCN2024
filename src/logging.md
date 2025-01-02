@@ -20,20 +20,21 @@
 Tech resource calculated successfully.
 
 
-2024-12-30 14:17:23,747 - root - INFO - Estimate the threshold of similarity between two tech resources
-2024-12-30 14:17:23,747 - root - INFO -   tech_resource: torch.Size([12197, 1024])
-2024-12-30 14:17:23,763 - root - INFO -   tech_resource: torch.Size([12099, 1024])
-2024-12-30 14:17:24,392 - root - INFO -   upper_triangle: (73186851,)
-2024-12-30 14:17:26,520 - root - INFO -   JB test
-2024-12-30 14:17:26,520 - root - INFO -   p_value: 0.0
-2024-12-30 14:17:26,520 - root - INFO -   JS test: tech resource is not normal distribution
-2024-12-30 14:17:38,145 - root - INFO -   KS test
-2024-12-30 14:17:38,145 - root - INFO -   p_value: 0.0
-2024-12-30 14:17:38,145 - root - INFO -   KS test: tech resource is not normal distribution
-2024-12-30 14:17:41,894 - root - INFO -   mean: 0.11715796
-2024-12-30 14:17:42,096 - root - INFO -   std: 0.28859445
-2024-12-30 14:17:42,097 - root - INFO -   threshold_1: 0.40575242
-2024-12-30 14:17:42,097 - root - INFO -   threshold_2: 0.6943468675017357
-2024-12-30 14:17:42,097 - root - INFO -   threshold_3: 0.9829413220286369
+2025-01-02 20:15:31,929 - root - INFO - Estimate the threshold of similarity between two tech resources
+2025-01-02 20:15:32,174 - root - INFO -   tech_resource: torch.Size([12197, 1024])
+2025-01-02 20:15:32,189 - root - INFO -   tech_resource: torch.Size([12099, 1024])
+2025-01-02 20:15:32,932 - root - INFO -   upper_triangle: (73186851,)
+2025-01-02 20:15:35,044 - root - INFO -   JB test
+2025-01-02 20:15:35,044 - root - INFO -   p_value: 0.0
+2025-01-02 20:15:35,044 - root - INFO -   JS test: tech resource is not normal distribution
+2025-01-02 20:15:46,902 - root - INFO -   KS test
+2025-01-02 20:15:46,902 - root - INFO -   p_value: 0.0
+2025-01-02 20:15:46,902 - root - INFO -   KS test: tech resource is not normal distribution
+2025-01-02 20:15:50,706 - root - INFO -   mean: 0.17404702
+2025-01-02 20:15:50,913 - root - INFO -   std: 0.23080096
+2025-01-02 20:15:50,913 - root - INFO -   threshold: 0.40484798
+2025-01-02 20:15:51,094 - root - INFO -   threshold: 0.6356489360332489
+2025-01-02 20:15:51,282 - root - INFO -   threshold: 0.8664498925209045
 Threshold calculated successfully.
+
  
