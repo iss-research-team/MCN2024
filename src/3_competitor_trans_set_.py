@@ -102,6 +102,10 @@ def main():
     # load tech resource
     tech_resource = np.load('../data/inputs/node_base2tech_resource.npy')
     tech_resource = torch.tensor(tech_resource)
+    # load node_patent2vec_mix_max_average.npy
+    node_patent2vec = np.load('../data/inputs/node_base2vec_mix_max_average.npy')
+    node_patent2vec = torch.tensor(node_patent2vec).half()
+
     # get index torch.sum(tech_resource, dim=1) != 0
     index_list = torch.nonzero(torch.sum(tech_resource, dim=1) != 0).squeeze()
     index_list = index_list.numpy().tolist()
