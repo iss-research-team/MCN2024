@@ -3,6 +3,7 @@ import csv
 import json
 from tqdm import tqdm
 from collections import defaultdict
+from utils import holder_clean
 
 
 def get_str(str1, str2):
@@ -19,10 +20,6 @@ def get_str(str1, str2):
         else:
             inf += '. '
     return inf
-
-
-def not_empty(s):
-    return s and s.strip()
 
 
 def time_deal(time):
@@ -171,23 +168,6 @@ def patent_combine():
         json.dump(patent2holder, f, ensure_ascii=False, indent=4)
 
 
-def holder_clean(holders, inventors):
-    """
-    从专利权人中去除发明人
-    :param holders:
-    :param inventors:
-    :return:
-    """
-    holder_list = holders.split(' | ')
-    holder_list = [holder.lower() for holder in holder_list]
-    holder_list = filter(not_empty, holder_list)
-    inventor_list = inventors.split(' | ')
-    inventor_list = [inventor.lower() for inventor in inventor_list]
-    inventor_list = filter(not_empty, inventor_list)
-    holder_list = list(set(holder_list) - set(inventor_list))
-    return holder_list
-
-
 def holder_clean_plus(holder_dwpi_list, holder_orig_list, dwpi2orig, orig2dwpi):
     """
 
@@ -286,34 +266,6 @@ def get_holder_couple():
         json.dump(orig2dwpi4save, f, ensure_ascii=False, indent=4)
 
 
-# def get_holder():
-#     with open('../../data/patent/inputs/patent2holder.json', 'r', encoding='utf-8') as f:
-#         patent2holder = json.load(f)
-#
-#     holder2patent = defaultdict(list)
-#     for patent, info in tqdm(patent2holder.items(), total=len(patent2holder)):
-#         holder_dwpi = info['holder_dwpi']
-#         inventors_dwpi = info['inventors_dwpi']
-#         holder_list = holder_clean(holder_dwpi, inventors_dwpi)
-#         for holder in holder_list:
-#             holder2patent[holder].append(patent)
-#
-#     print('num of holder:', len(holder2patent))
-#     with open('../../data/patent/inputs/holder2patent.json', 'w', encoding='utf-8') as f:
-#         json.dump(holder2patent, f, ensure_ascii=False, indent=4)
-#
-#
-# def get_node2index():
-#     with open('../../data/patent/inputs/holder2patent.json', 'r', encoding='utf-8') as f:
-#         holder2patent = json.load(f)
-#
-#     node2index = {}
-#     for index, node in enumerate(holder2patent):
-#         node2index[node] = index
-#     with open('../../data/patent/inputs/node2index_patent.json', 'w', encoding='utf-8') as f:
-#         json.dump(node2index, f, ensure_ascii=False, indent=4)
-
-
 if __name__ == '__main__':
     # 1.专利获取
     get_patent2holder()
@@ -322,8 +274,3 @@ if __name__ == '__main__':
     # 3.获取专利权人组合
     get_holder_couple()
     # 这里对原始的代码进行修改，在进行完整的匹配后再进行索引
-
-    # # 3.获取专利权人
-    # get_holder()
-    # # 5.获取node2index
-    # get_node2index()

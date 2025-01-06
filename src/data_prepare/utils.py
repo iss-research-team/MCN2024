@@ -61,3 +61,24 @@ def load_sign_list(file):
     sign_list = [sign.lower() for sign in sign_list]
     sign_list = [' ' + sign + ' ' for sign in sign_list]
     return sign_list
+
+
+def not_empty(s):
+    return s and s.strip()
+
+
+def holder_clean(holders, inventors):
+    """
+    从专利权人中去除发明人
+    :param holders:
+    :param inventors:
+    :return:
+    """
+    holder_list = holders.split(' | ')
+    holder_list = [holder.lower() for holder in holder_list]
+    holder_list = filter(not_empty, holder_list)
+    inventor_list = inventors.split(' | ')
+    inventor_list = [inventor.lower() for inventor in inventor_list]
+    inventor_list = filter(not_empty, inventor_list)
+    holder_list = list(set(holder_list) - set(inventor_list))
+    return holder_list
