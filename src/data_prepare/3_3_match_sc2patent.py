@@ -2,7 +2,6 @@ import json
 import multiprocessing as mp
 from functools import partial
 from tqdm import tqdm
-import Levenshtein
 import pandas as pd
 from collections import defaultdict
 from utils import load_sign_list, node_clean, match_single, holder_clean
@@ -98,7 +97,6 @@ def get_node_list_patent():
             node_patent_list_match.add(orig2dwpi[node])
         else:
             node_patent_list_match.add(node)
-
     logging.info('node_patent_list_match {}'.format(len(node_patent_list_match)))
     # save node_patent_list_match
     with open('../../data/match_sc2patent/node_list_patent.json', 'w', encoding='utf-8') as f:
@@ -106,23 +104,19 @@ def get_node_list_patent():
 
 
 def match():
-    # load_node_list_1
-    with open('../../data/base/inputs/node_base2sc.json', 'r', encoding='utf-8') as f:
-        node_base2sc = json.load(f)
-    print(len(node_base2sc))
-
-    node_list_1 = []
-    for node_base, node_sc_list in node_base2sc.items():
-        node_list_1.append(node_base)
-        node_list_1.extend(node_sc_list)
-    node_list_1 = list(set(node_list_1))
-    # load_node_list_2
-    with open('../../data/patent/inputs/node2index_patent.json', 'r', encoding='utf-8') as f:
-        node2index = json.load(f)
-    node_list_2 = list(node2index.keys())
-
-    print('node_list_1', len(node_list_1))
-    print('node_list_2', len(node_list_2))
+    """
+    node_list_1: sc
+    node_list_2: patent
+    :return:
+    """
+    # load_node_list_sc
+    with open('../../data/match_sc2patent/node_list_sc.json', 'r', encoding='utf-8') as f:
+        node_list_1 = json.load(f)
+    logging.info('node_list_sc {}'.format(len(node_list_1)))
+    # load_node_list_patent
+    with open('../../data/match_sc2patent/node_list_patent.json', 'r', encoding='utf-8') as f:
+        node_list_2 = json.load(f)
+    logging.info('node_list_patent {}'.format(len(node_list_2)))
 
     sign_list_1 = load_sign_list('operation_list_clean')
     sign_list_2 = load_sign_list('organization_list_clean')
@@ -134,21 +128,21 @@ def match():
     node2node_clean_2 = dict(zip(node_list_2, node_list_2_clean))
 
     # match_stage_1
-    # couple_list = []
-    # pool = mp.Pool()
-    # func = partial(match_single, node2node_clean_1, node2node_clean_2, 0.6)
-    # for couple in tqdm(pool.imap(func, node_list_1), total=len(node_list_1)):
-    #     couple_list.extend(couple)
-    # pool.close()
-    # pool.join()
+    couple_list = []
+    pool = mp.Pool()
+    func = partial(match_single, node2node_clean_1, node2node_clean_2, 0.6)
+    for couple in tqdm(pool.imap(func, node_list_1), total=len(node_list_1)):
+        couple_list.extend(couple)
+    pool.close()
+    pool.join()
     couple_list = []
     for node_1 in tqdm(node_list_1):
         couple_list_ = match_single(node2node_clean_1, node2node_clean_2, 0.6, node_1)
         couple_list.extend(couple_list_)
-    print('couple_list', len(couple_list))
+    logging.info('couple_list {}'.format(len(couple_list)))
 
     # save
-    with open('../../data/base/match_stage_3/match_result.json', 'w', encoding='utf-8') as f:
+    with open('../../data/match_sc2patent/match_result.json', 'w', encoding='utf-8') as f:
         json.dump(couple_list, f, ensure_ascii=False, indent=4)
 
 
@@ -277,10 +271,11 @@ def match_result_combine():
 
 
 if __name__ == '__main__':
-    get_node_list_sc()
-    get_node_list_patent()
-    # match()
-    # analysis()
+    # get node list for match
+    # get_node_list_sc()
+    # get_node_list_patent()
+    match()
+    analysis()
     # 根据match_result的表二，k1,k2的阈值选择为0.81,0.9
     # k1 = 0.68
     # k2 = 0.835
