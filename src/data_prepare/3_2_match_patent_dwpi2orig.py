@@ -3,38 +3,19 @@ from tqdm import tqdm
 import Levenshtein
 from collections import defaultdict
 import logging
+from utils import load_sign_list, node_clean
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-
-def load_sign_list(file):
-    sign_list = []
-    with open('../../data/sign/{}'.format(file), 'r', encoding='utf-8') as f:
-        for line in f:
-            sign_list.append(line.strip())
-    # lower
-    sign_list = [sign.lower() for sign in sign_list]
-    sign_list = [' ' + sign + ' ' for sign in sign_list]
-    return sign_list
-
-
-def node_clean(node, sign_list_1, sign_list_2):
-    node = ' ' + node + ' '
-    for sign in sign_list_1:
-        node = node.replace(sign, ' ')
-    for sign in sign_list_2:
-        node = node.replace(sign, ' ')
-    # for sign in sign_list_3:
-    #     node = node.replace(sign, ' ')
-    node = node.strip()
-    return node
 
 
 def match_single(dwpi2orig, dwpi2dwpi_clean, orig2orig_clean, k, dwpi):
     """
     从node_list_1中找到与node最相似的节点
-    :param node_list_1:
-    :param node:
+    :param dwpi2orig:
+    :param dwpi2dwpi_clean:
+    :param orig2orig_clean:
+    :param k:
+    :param dwpi:
     :return:
     """
 
@@ -116,15 +97,21 @@ def clean_dwpi2orig(k1, k2):
             if orig in dwpi2orig_match_result[dwpi]:
                 dwpi2orig_clean[dwpi][orig] = dwpi2orig_match_result[dwpi][orig]
     logging.info('dwpi2orig_clean: %d', len(dwpi2orig_clean))
-    dwpi2orig_safe = {dwpi: dwpi2orig_clean[dwpi] for dwpi in dwpi2orig_clean if len(dwpi2orig_clean[dwpi]) <= 2}
+    # 这里只进行一次清洗，不再进行基于GPT的二次清洗
+    dwpi2orig_safe = {}
+
+    for dwpi, orig_dict in dwpi2orig_clean.items():
+        if len(orig_dict) <= 2:
+            dwpi2orig_safe[dwpi] = orig_dict
+        else:
+            orig_dict = {orig: {'sim_1': sim['sim_1'], 'sim_2': sim['sim_2']}
+                         for orig, sim in orig_dict.items()
+                         if sim['sim_2'] >= 1.0}
+            dwpi2orig_safe[dwpi] = orig_dict
+
     logging.info('dwpi2orig_safe: %d', len(dwpi2orig_safe))
     with open('../../data/patent/inputs/dwpi2orig_safe.json', 'w', encoding='utf-8') as f:
         json.dump(dwpi2orig_safe, f, ensure_ascii=False, indent=4)
-    dwpi2orig_hand = {dwpi: dwpi2orig_clean[dwpi] for dwpi in dwpi2orig_clean if len(dwpi2orig_clean[dwpi]) > 2}
-    dwpi2orig_hand = dict(sorted(dwpi2orig_hand.items(), key=lambda x: len(x[1]), reverse=True))
-    logging.info('dwpi2orig_hand: %d', len(dwpi2orig_hand))
-    with open('../../data/patent/inputs/dwpi2orig_hand.json', 'w', encoding='utf-8') as f:
-        json.dump(dwpi2orig_hand, f, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':
