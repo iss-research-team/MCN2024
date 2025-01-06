@@ -2,6 +2,9 @@ import json
 from tqdm import tqdm
 import Levenshtein
 from collections import defaultdict
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
 def load_sign_list(file):
@@ -82,7 +85,7 @@ def match():
             sim_2 = Levenshtein.ratio(dwpi_clean, orig_clean)
             if sim_1 > 0.6 and sim_2 > 0.6:
                 couple_list.append((dwpi, orig, sim_1, sim_2))
-    print('couple_list', len(couple_list))
+    logging.info('couple_list: %d', len(couple_list))
     # save
     with open('../../data/patent/inputs/dwpi2orig_couple.json', 'w', encoding='utf-8') as f:
         json.dump(couple_list, f, ensure_ascii=False, indent=4)
@@ -96,7 +99,7 @@ def clean_dwpi2orig(k1, k2):
     """
     with open('../../data/patent/inputs/dwpi2orig.json', 'r', encoding='utf-8') as f:
         dwpi2orig = json.load(f)
-    print('dwpi2orig', len(dwpi2orig))
+    logging.info('dwpi2orig: %d', len(dwpi2orig))
     with open('../../data/patent/inputs/dwpi2orig_couple.json', 'r', encoding='utf-8') as f:
         couple_list = json.load(f)
     # load match_stage_1 result
@@ -104,7 +107,7 @@ def clean_dwpi2orig(k1, k2):
     for dwpi, orig, sim_1, sim_2 in couple_list:
         if sim_1 > k1 and sim_2 > k2:
             dwpi2orig_match_result[dwpi][orig] = {'sim_1': sim_1, 'sim_2': sim_2}
-    print('dwpi2orig_match_result', len(dwpi2orig_match_result))
+    logging.info('dwpi2orig_match_result: %d', len(dwpi2orig_match_result))
     # clean
     dwpi2orig_clean = defaultdict(dict)
     for dwpi in dwpi2orig:
@@ -112,14 +115,14 @@ def clean_dwpi2orig(k1, k2):
         for orig in orig_list:
             if orig in dwpi2orig_match_result[dwpi]:
                 dwpi2orig_clean[dwpi][orig] = dwpi2orig_match_result[dwpi][orig]
-    print('dwpi2orig_clean', len(dwpi2orig_clean))
+    logging.info('dwpi2orig_clean: %d', len(dwpi2orig_clean))
     dwpi2orig_safe = {dwpi: dwpi2orig_clean[dwpi] for dwpi in dwpi2orig_clean if len(dwpi2orig_clean[dwpi]) <= 2}
-    print('dwpi2orig_safe', len(dwpi2orig_safe))
+    logging.info('dwpi2orig_safe: %d', len(dwpi2orig_safe))
     with open('../../data/patent/inputs/dwpi2orig_safe.json', 'w', encoding='utf-8') as f:
         json.dump(dwpi2orig_safe, f, ensure_ascii=False, indent=4)
     dwpi2orig_hand = {dwpi: dwpi2orig_clean[dwpi] for dwpi in dwpi2orig_clean if len(dwpi2orig_clean[dwpi]) > 2}
     dwpi2orig_hand = dict(sorted(dwpi2orig_hand.items(), key=lambda x: len(x[1]), reverse=True))
-    print('dwpi2orig_hand', len(dwpi2orig_hand))
+    logging.info('dwpi2orig_hand: %d', len(dwpi2orig_hand))
     with open('../../data/patent/inputs/dwpi2orig_hand.json', 'w', encoding='utf-8') as f:
         json.dump(dwpi2orig_hand, f, ensure_ascii=False, indent=4)
 
