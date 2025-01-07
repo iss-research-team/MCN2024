@@ -1,5 +1,8 @@
 import json
 import Levenshtein
+import logging
+
+logging = logging.getLogger(__name__)
 
 
 def load_node_list(label):
@@ -19,7 +22,7 @@ def load_node_list(label):
     return node_list
 
 
-def match_single(node2node_clean_1, node2node_clean_2, k, node_1):
+def match_single(node2node_clean_1, node2node_clean_2, k, node_list_1, index):
     """
     在node2node_clean_2中找到与node_1最相似的节点
     :param node2node_clean_1:
@@ -28,8 +31,9 @@ def match_single(node2node_clean_1, node2node_clean_2, k, node_1):
     :param node_1:
     :return:
     """
+    logging.info(index)
+    node_1 = node_list_1[index]
     node_1_clean = node2node_clean_1[node_1]
-
     couple_list = []
     for node_2 in node2node_clean_2:
         node_2_clean = node2node_clean_2[node_2]

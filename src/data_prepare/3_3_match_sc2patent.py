@@ -4,11 +4,11 @@ from functools import partial
 from tqdm import tqdm
 import pandas as pd
 from collections import defaultdict
-from utils import load_sign_list, node_clean, match_single, holder_clean
-
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+from utils import load_sign_list, node_clean, match_single, holder_clean
 
 
 def get_node_list_sc():
@@ -130,15 +130,14 @@ def match():
     # match_stage_1
     couple_list = []
     pool = mp.Pool()
-    func = partial(match_single, node2node_clean_1, node2node_clean_2, 0.6)
-    for couple in tqdm(pool.imap(func, node_list_1), total=len(node_list_1)):
-        couple_list.extend(couple)
+    func = partial(match_single, node2node_clean_1, node2node_clean_2, 0.6, node_list_1)
+
+    result_list = pool.map(func, range(len(node_list_1)))
+    for couple_list_ in result_list:
+        couple_list.extend(couple_list_)
+
     pool.close()
     pool.join()
-    couple_list = []
-    for node_1 in tqdm(node_list_1):
-        couple_list_ = match_single(node2node_clean_1, node2node_clean_2, 0.6, node_1)
-        couple_list.extend(couple_list_)
     logging.info('couple_list {}'.format(len(couple_list)))
 
     # save
@@ -152,7 +151,7 @@ def analysis():
     :return:
     """
     # load couple_list
-    with open('../../data/base/match_stage_3/match_result.json', 'r', encoding='utf-8') as f:
+    with open('../../data/match_sc2patent/match_result.json', 'r', encoding='utf-8') as f:
         couple_list = json.load(f)
     num_collection_link_num = dict()
     num_collection_node_num = dict()
@@ -168,9 +167,9 @@ def analysis():
             num_collection_node_num[k1][k2] = len(node_base2sc)
     # to excel for heatmap by pandas
     df = pd.DataFrame(num_collection_link_num)
-    df.to_excel('../../data/base/match_stage_3/match_result_link_num_heatmap.xlsx', index=True)
+    df.to_excel('../../data/match_sc2patent/match_result_link_num_heatmap.xlsx', index=True)
     df = pd.DataFrame(num_collection_node_num)
-    df.to_excel('../../data/base/match_stage_3/match_result_node_num_heatmap.xlsx', index=True)
+    df.to_excel('../../data/match_sc2patent/match_result_node_num_heatmap.xlsx', index=True)
 
 
 def dwpi2orig_check(node1, node2, dwpi2orig_safe):
@@ -274,7 +273,7 @@ if __name__ == '__main__':
     # get node list for match
     # get_node_list_sc()
     # get_node_list_patent()
-    match()
+    # match()
     analysis()
     # 根据match_result的表二，k1,k2的阈值选择为0.81,0.9
     # k1 = 0.68
