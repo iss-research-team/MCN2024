@@ -1,29 +1,34 @@
 import numpy as np
 import torch
 import logging
-import json
-import torch.multiprocessing as mp
-from functools import partial
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
+import torch.multiprocessing as mp
+from functools import partial
+from utils import *
 
-def get_sim(target, target_tech_resource, step_list):
+
+def get_sim(target, tech_resource, node_patent2vec, step_list):
     """
     获取sim
     聚合step_list上面所有的节点
     计算step_list+target_tech_resource到target的相似度
 
     :param target: [dim]
-    :param target_tech_resource: [n, dim]
+    :param node_patent2vec: [n, dim]
+    :param tech_resource: [n, dim]
     :param step_list: list
     :return:
     """
     if not step_list:
-        sim = torch.matmul(target_tech_resource, target)
+        sim = torch.matmul(node_patent2vec, target)
     else:
-        integrate = torch.sum(target_tech_resource[step_list], dim=0).unsqueeze(0)
-        sim = torch.matmul((integrate + target_tech_resource) / (len(step_list) + 1), target)
+        integrate = node_patent2vec[step_list]  # [len(step_list), dim]
+        integrate = (torch.cat([integrate.unsqueeze(0).expand(tech_resource.shape[0], -1, -1),
+                                tech_resource.unsqueeze(1)], dim=1))
+        integrate = mix_max(integrate, average="mean")
+        sim = torch.matmul(integrate, target)
 
     return sim
 
@@ -40,25 +45,27 @@ def get_max_index(sim, remove_list):
     return max_index
 
 
-def get_integrate_set_list(target_index, tech_resource, p):
+def get_integrate_set_list(target_index, tech_resource, node_patent2vec, p):
     """
     get integrate set list
     :param target_index:
     :param tech_resource:
+    :param node_patent2vec:
     :param p:
     :return:
     """
     logging.info('---------- target_index: %s ----------', target_index)
     integrate_set_list = []
     step_list = []
-    tech_resource = tech_resource.cuda()
+    tech_resource_temp = tech_resource.cuda()
+    node_patent2vec_temp = node_patent2vec.cuda()
 
     remove_list = [target_index]
-    target = tech_resource[target_index]
+    target = tech_resource[target_index].cuda()
 
     while True:
         # get sim
-        sim = get_sim(target, tech_resource, step_list)
+        sim = get_sim(target, tech_resource_temp, node_patent2vec_temp, step_list)
         # get integrate set
         integrate_set = torch.nonzero(sim > p).squeeze(1).cpu().numpy().tolist()
         integrate_set = [index for index in integrate_set if index not in remove_list]
@@ -105,20 +112,20 @@ def main():
     # load node_patent2vec_mix_max_average.npy
     node_patent2vec = np.load('../data/inputs/node_base2vec_mix_max_average.npy')
     node_patent2vec = torch.tensor(node_patent2vec).half()
-
     # get index torch.sum(tech_resource, dim=1) != 0
     index_list = torch.nonzero(torch.sum(tech_resource, dim=1) != 0).squeeze()
     index_list = index_list.numpy().tolist()
     index_new2index_old = {index_new: index_old for index_new, index_old in enumerate(index_list)}
     tech_resource = tech_resource[index_list]  # 不存在 0 行
+    node_patent2vec = node_patent2vec[index_list]
     # norm
     tech_resource = tech_resource / torch.norm(tech_resource, dim=1, keepdim=True)
     # 2 float16
     tech_resource = tech_resource.half()
     num_nodes = tech_resource.shape[0]
     # multi-process
-    fun = partial(get_integrate_set_list, tech_resource=tech_resource, p=p)
-    pool = mp.Pool(processes=16)
+    fun = partial(get_integrate_set_list, tech_resource=tech_resource, node_patent2vec=node_patent2vec, p=p)
+    pool = mp.Pool(processes=4)
     node2integrate_set_list = dict()
     try:
         result = pool.map(fun, range(100))
