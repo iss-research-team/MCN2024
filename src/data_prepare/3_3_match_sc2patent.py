@@ -187,86 +187,61 @@ def match_output(k1, k2):
     分两步保存
     :return:
     """
-    with open('../../data/base/inputs/node_base2sc.json', 'r', encoding='utf-8') as f:
-        node_base2sc = json.load(f)
-    # get node_sc2base
-    node_sc2base = defaultdict(set)
-    for node_base, node_sc_list in node_base2sc.items():
-        for node_sc in node_sc_list:
-            node_sc2base[node_sc].add(node_base)
-    node_sc2base = {node: list(node_sc2base[node]) for node in node_sc2base}
-    # load couple_list
-    with open('../../data/base/match_stage_3/match_result.json', 'r', encoding='utf-8') as f:
+    with open('../../data/match_sc2patent/match_result.json', 'r', encoding='utf-8') as f:
         couple_list = json.load(f)
-    # load dwpi2orig_safe
-    with open('../../data/patent/inputs/dwpi2orig_safe.json', 'r', encoding='utf-8') as f:
-        dwpi2orig_safe = json.load(f)
-    node_base2patent_safe_1 = defaultdict(dict)
-    for node, node_patent, sim_1, sim_2 in couple_list:
-        # 这里增加一个非常重要的机制引入的dwpi2orig_safe
-        if dwpi2orig_check(node, node_patent, dwpi2orig_safe) or sim_1 > 0.95 and sim_2 > 0.95:
-            if node in node_base2sc:
-                node_base2patent_safe_1[node][node_patent] = {'sim_1': sim_1, 'sim_2': sim_2}
-            elif node in node_sc2base:
-                for node_base in node_sc2base[node]:
-                    node_base2patent_safe_1[node_base][node_patent] = {'sim_1': sim_1, 'sim_2': sim_2}
-    print('node_base2patent4safe_1', len(node_base2patent_safe_1))
-    with open('../../data/base/match_stage_3/node_base2patent4safe_1.json', 'w', encoding='utf-8') as f:
-        json.dump(node_base2patent_safe_1, f, ensure_ascii=False, indent=4)
-    node_base2patent = defaultdict(dict)
-    for node, node_patent, sim_1, sim_2 in couple_list:
+    node_sc2patent4safe_1 = defaultdict(dict)
+    for node_sc, node_patent, sim_1, sim_2 in couple_list:
+        if sim_1 > 0.95 and sim_2 > 0.95:
+            node_sc2patent4safe_1[node_sc][node_patent] = {'sim_1': sim_1, 'sim_2': sim_2}
+    logging.info('node_sc2patent4safe_1: %d', len(node_sc2patent4safe_1))
+    with open('../../data/match_sc2patent/node_sc2patent4safe_1.json', 'w', encoding='utf-8') as f:
+        json.dump(node_sc2patent4safe_1, f, ensure_ascii=False, indent=4)
+    node_sc2patent = defaultdict(dict)
+    for node_sc, node_patent, sim_1, sim_2 in couple_list:
         if sim_1 > k1 and sim_2 > k2:
-            if node in node_base2sc:
-                if node in node_base2patent_safe_1 and node_patent in node_base2patent_safe_1[node]:
-                    continue
-                node_base2patent[node][node_patent] = {'sim_1': sim_1, 'sim_2': sim_2}
-            elif node in node_sc2base:
-                for node_base in node_sc2base[node]:
-                    if node in node_base2patent_safe_1 and node_patent in node_base2patent_safe_1[node]:
-                        continue
-                    node_base2patent[node_base][node_patent] = {'sim_1': sim_1, 'sim_2': sim_2}
+            if node_sc in node_sc2patent4safe_1 and node_patent in node_sc2patent4safe_1[node_sc]:
+                continue
+            node_sc2patent[node_sc][node_patent] = {'sim_1': sim_1, 'sim_2': sim_2}
+    logging.info('node_sc2patent: %d', len(node_sc2patent))
+    node_sc2patent4safe_2 = {node: node_sc2patent[node] for node in node_sc2patent if len(node_sc2patent[node]) <= 2}
+    logging.info('node_sc2patent4safe_2: %d', len(node_sc2patent4safe_2))
+    safe_list = list(set(node_sc2patent4safe_1.keys()) | set(node_sc2patent4safe_2.keys()))
+    logging.info('node_base2sc4safe: %d', len(safe_list))
 
-    print('node_base2patent', len(node_base2patent))
-    node_base2patent4safe_2 = {node: node_base2patent[node] for node in node_base2patent
-                               if len(node_base2patent[node]) <= 2}
-    print('node_base2patent4safe_2', len(node_base2patent4safe_2))
-    with open('../../data/base/match_stage_3/node_base2patent4safe_2.json', 'w', encoding='utf-8') as f:
-        json.dump(node_base2patent4safe_2, f, ensure_ascii=False, indent=4)
-    safe_list = list(set(node_base2patent_safe_1.keys()) | set(node_base2patent4safe_2.keys()))
-    print('node_base2patent_safe', len(safe_list))
-
-    node_base2patent4hand = {node: node_base2patent[node] for node in node_base2patent
-                             if len(node_base2patent[node]) > 2}
-    node_base2patent4hand = dict(sorted(node_base2patent4hand.items(), key=lambda x: len(x[1]), reverse=True))
-    print('node_base2patent4hand', len(node_base2patent4hand))
-    with open('../../data/base/match_stage_3/node_base2patent4hand.json', 'w', encoding='utf-8') as f:
-        json.dump(node_base2patent4hand, f, ensure_ascii=False, indent=4)
-    hand_list = list(set(node_base2patent4hand.keys()) - set(node_base2patent_safe_1.keys()))
-    print('node_base2patent4hand', len(hand_list))
+    with open('../../data/match_sc2patent/node_sc2patent4safe_2.json', 'w', encoding='utf-8') as f:
+        json.dump(node_sc2patent4safe_2, f, ensure_ascii=False, indent=4)
+    node_sc2patent4hand = {node: node_sc2patent[node] for node in node_sc2patent if len(node_sc2patent[node]) > 2}
+    node_sc2patent4hand = dict(sorted(node_sc2patent4hand.items(), key=lambda x: len(x[1]), reverse=True))
+    logging.info('node_sc2patent4hand: %d', len(node_sc2patent4hand))
+    hand_list = list(set(node_sc2patent4hand.keys()) - set(node_sc2patent4safe_1.keys()))
+    logging.info('node_sc2patent4hand: %d', len(hand_list))
+    with open('../../data/match_sc2patent/node_sc2patent4hand.json', 'w', encoding='utf-8') as f:
+        json.dump(node_sc2patent4hand, f, ensure_ascii=False, indent=4)
 
 
 def match_result_combine():
-    with open('../../data/base/match_stage_3/node_base2patent4safe_1.json', 'r', encoding='utf-8') as f:
+    with open('../../data/match_sc2patent/node_sc2patent4safe_1.json', 'r', encoding='utf-8') as f:
         node_base2patent4safe_1 = json.load(f)
-    with open('../../data/base/match_stage_3/node_base2patent4safe_2.json', 'r', encoding='utf-8') as f:
+    with open('../../data/match_sc2patent/node_sc2patent4safe_2.json', 'r', encoding='utf-8') as f:
         node_base2patent4safe_2 = json.load(f)
-    with open('../../data/base/match_stage_3/node_base2patent4hand_clean.json', 'r', encoding='utf-8') as f:
+    with open('../../data/match_sc2patent/node_sc2patent4hand_clean.json', 'r', encoding='utf-8') as f:
         node_base2patent4hand_clean = json.load(f)
     node_base2patent4safe_1 = {node: set(node_base2patent4safe_1[node].keys()) for node in node_base2patent4safe_1}
+    logging.info('node_base2patent4safe_1: %d', len(node_base2patent4safe_1))
     node_base2patent4safe_2 = {node: set(node_base2patent4safe_2[node].keys()) for node in node_base2patent4safe_2}
+    logging.info('node_base2patent4safe_2: %d', len(node_base2patent4safe_2))
     node_base2patent4hand_clean = {node: set(node_base2patent4hand_clean[node]) for node in node_base2patent4hand_clean}
-    node_base2patent = defaultdict(set)
-    for node in node_base2patent4safe_1:
-        node_base2patent[node].update(node_base2patent4safe_1[node])
-    for node in node_base2patent4safe_2:
-        node_base2patent[node].update(node_base2patent4safe_2[node])
-    for node in node_base2patent4hand_clean:
-        node_base2patent[node].update(node_base2patent4hand_clean[node])
-    print('node_base2patent', len(node_base2patent))
+    logging.info('node_base2patent4hand_clean: %d', len(node_base2patent4hand_clean))
+    node_base2patent_combine = defaultdict(set)
+    for node_base2patent in [node_base2patent4safe_1, node_base2patent4safe_2, node_base2patent4hand_clean]:
+        for node_base, node_patent_list in node_base2patent.items():
+            node_base2patent_combine[node_base].update(node_patent_list)
+        logging.info('node_base2patent_combine: %d', len(node_base2patent_combine))
+
     # save
-    node_base2patent = {node: list(node_base2patent[node]) for node in node_base2patent}
-    with open('../../data/base/inputs/node_base2patent.json', 'w', encoding='utf-8') as f:
-        json.dump(node_base2patent, f, ensure_ascii=False, indent=4)
+    node_base2patent_combine = {k: list(v) for k, v in node_base2patent_combine.items()}
+    with open('../../data/match_sc2patent/node_sc2patent.json', 'w', encoding='utf-8') as f:
+        json.dump(node_base2patent_combine, f, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':
@@ -274,10 +249,9 @@ if __name__ == '__main__':
     # get_node_list_sc()
     # get_node_list_patent()
     # match()
-    analysis()
-    # 根据match_result的表二，k1,k2的阈值选择为0.81,0.9
-    # k1 = 0.68
-    # k2 = 0.835
-    # print(k1, k2)
+    # analysis()
+    # 根据match_result的表二，k1,k2的阈值选择为0.67,0.8
+    # k1 = 0.67
+    # k2 = 0.8
     # match_output(k1, k2)
-    # match_result_combine()
+    match_result_combine()
