@@ -1,6 +1,8 @@
 import json
 import Levenshtein
 import logging
+
+import numpy as np
 import torch
 
 logging = logging.getLogger(__name__)
@@ -99,6 +101,7 @@ def mix_max(tensor, average='0'):
     :return:
     """
     # to torch
+    tensor = np.array(tensor)
     tensor = torch.tensor(tensor)
     # to cuda
     tensor = tensor.cuda()
