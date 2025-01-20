@@ -1,6 +1,7 @@
 import json
 import Levenshtein
 import logging
+import torch
 
 logging = logging.getLogger(__name__)
 
@@ -86,3 +87,38 @@ def holder_clean(holders, inventors):
     inventor_list = filter(not_empty, inventor_list)
     holder_list = list(set(holder_list) - set(inventor_list))
     return holder_list
+
+
+def mix_max(tensor, average='0'):
+    """
+    mix max
+    :param tensor:
+        [batch, dim]
+    :param average:
+        mean
+    :return:
+    """
+    # to torch
+    tensor = torch.tensor(tensor)
+    # to cuda
+    tensor = tensor.cuda()
+
+    # device
+    if average == 'mean':
+        average = torch.mean(tensor, dim=0)
+    elif average == '0':
+        average = torch.zeros(tensor.shape[-1])
+    else:
+        raise ValueError('average must be mean or 0')
+
+    # mix max
+    # max | v > average
+    # min | v < average
+    tensor_max = torch.max(tensor, dim=0).values
+    tensor_min = torch.min(tensor, dim=0).values
+    # diff
+    diff_max = tensor_max - average
+    diff_min = average - tensor_min
+    # mix max
+    tensor_mix_max = torch.where(diff_max > diff_min, tensor_max, tensor_min)
+    return tensor_mix_max.cpu().numpy()

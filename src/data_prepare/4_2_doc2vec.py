@@ -120,61 +120,20 @@ def doc_trans_2(model, output_path, length, batch_size, device):
 
 
 if __name__ == '__main__':
-    # tokenizer = RobertaTokenizer.from_pretrained('roberta-large')
+    tokenizer = RobertaTokenizer.from_pretrained('roberta-large')
     model = RobertaModel.from_pretrained('roberta-large')
     device = torch.device('cuda:0')
     model.to(device)
     model.eval()
 
-    # for index in [
-    #               '2_6', '2_7', '2_8', '2_9', '2_10', '2_11', '3_7', '3_8', '3_9', '3_10']:
-    #     file_path = '../../data/patent/inputs/patent_id2doc/patent_id2doc_{}.json'.format(index)
-    #     print(file_path)
-    #     output_path = '../../data/patent/inputs/doc2vec_{}'.format(index)
-    #     if not os.path.exists(output_path):
-    #         os.mkdir(output_path)
-    #     doc_trans_1(tokenizer, file_path, output_path)
+    index_list = []
 
-    # args = parameter_parser()
-
-    # for index in ['1_1', '1_3', '1_4', '1_5', '1_6', '1_7', '1_8']:
-    #     output_path = '../../data/patent/inputs/doc2vec_{}'.format(index)
-    #     print(output_path)
-    #
-    #     for length, batch_size in [(320, 26), (384, 22), (448, 18), (512, 14)]:
-    #         doc_trans_2(model, output_path, length=length, batch_size=batch_size, device=device)
-
-    for index in ['1_9', '1_10', '1_11', '1_12', '1_13', '1_14', '1_15', '1_16']:
+    for index in index_list:
+        file_path = '../../data/patent/inputs/patent_id2doc/patent_id2doc_{}.json'.format(index)
+        print(file_path)
         output_path = '../../data/patent/inputs/doc2vec_{}'.format(index)
-        print(output_path)
-
+        if not os.path.exists(output_path):
+            os.mkdir(output_path)
+        doc_trans_1(tokenizer, file_path, output_path)
         for length, batch_size in [(320, 26), (384, 22), (448, 18), (512, 14)]:
             doc_trans_2(model, output_path, length=length, batch_size=batch_size, device=device)
-
-    # for index in ['2_0', '2_1', '2_2', '2_6', '2_7', '2_8']:
-    #     output_path = '../../data/patent/inputs/doc2vec_{}'.format(index)
-    #     print(output_path)
-    #
-    #     for length, batch_size in [(320, 36), (384, 32), (448, 24), (512, 20)]:
-    #         doc_trans_2(model, output_path, length=length, batch_size=batch_size, device=device)
-
-    # for index in ['2_3', '2_4', '2_5', '2_9', '2_10', '2_11']:
-    #     output_path = '../../data/patent/inputs/doc2vec_{}'.format(index)
-    #     print(output_path)
-    #
-    #     for length, batch_size in [(320, 36), (384, 32), (448, 24), (512, 20)]:
-    #         doc_trans_2(model, output_path, length=length, batch_size=batch_size, device=device)
-    #
-    # for index in ['3_0', '3_1', '3_2', '3_6', '3_7', '3_8']:
-    #     output_path = '../../data/patent/inputs/doc2vec_{}'.format(index)
-    #     print(output_path)
-    #
-    #     for length, batch_size in [(320, 36), (384, 32), (448, 24), (512, 20)]:
-    #         doc_trans_2(model, output_path, length=length, batch_size=batch_size, device=device)
-
-    # for index in ['3_3', '3_4', '3_5', '3_9', '3_10']:
-    #     output_path = '../../data/patent/inputs/doc2vec_{}'.format(index)
-    #     print(output_path)
-    #
-    #     for length, batch_size in [(320, 36), (384, 32), (448, 24), (512, 20)]:
-    #         doc_trans_2(model, output_path, length=length, batch_size=batch_size, device=device)
